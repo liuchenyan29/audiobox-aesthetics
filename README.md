@@ -93,7 +93,7 @@ The majority of audiobox-aesthetics is licensed under CC-BY 4.0, as found in the
 However, portions of the project are available under separate license terms: [https://github.com/microsoft/unilm](https://github.com/microsoft/unilm) is licensed under MIT license.
 
 ## Citation
-If you found this repository useful, please use the following BibTeX entry.
+If you found this repository useful, please use the following BibTeX entry. (will include arXiv link soon)
 
 ```
 @article{tjandra2025aes,
