@@ -37,7 +37,6 @@ dependencies = [
   "torch>=2.2.0",
   "torchaudio",
   "tqdm",
-  "iopath",
   "submitit"
 ]
 
@@ -45,7 +44,7 @@ dependencies = [
 audio-aes = "audiobox_aesthetics.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/pypa/sampleproject"
-Issues = "https://github.com/pypa/sampleproject/issues"
+Homepage = "https://github.com/facebookresearch/audiobox-aesthetics"
+Issues = "https://github.com/facebookresearch/audiobox-aesthetics/issues"
 
 

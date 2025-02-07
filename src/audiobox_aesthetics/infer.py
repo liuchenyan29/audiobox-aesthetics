@@ -10,7 +10,6 @@ import re
 import sys
 from typing import Any, Dict, List
 from tqdm import tqdm
-from iopath import PathManager
 import torch
 import torchaudio
 import torch.nn.functional as F
@@ -81,10 +80,9 @@ class AesWavlmPredictorMultiOutput:
     def setup_model(self):
         # This method gets called before inference starts
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.path_manager = PathManager()
         print(f"Setting up Aesthetic model on {self.device}", file=sys.stderr)
 
-        with self.path_manager.open(self.checkpoint_pth, "rb") as fin:
+        with open(self.checkpoint_pth, "rb") as fin:
             ckpt = torch.load(fin, map_location=self.device)
             state_dict = {
                 re.sub("^model.", "", k): v for (k, v) in ckpt["state_dict"].items()
