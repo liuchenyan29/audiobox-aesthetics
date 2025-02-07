@@ -2,6 +2,8 @@
 
 Unified automatic quality assessment for speech, music, and sound.
 
+Read our paper [here](https://ai.meta.com/research/publications/meta-audiobox-aesthetics-unified-automatic-quality-assessment-for-speech-music-and-sound/).
+
 [](Paper)
 
 ## Installation
