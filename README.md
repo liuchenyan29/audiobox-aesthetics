@@ -4,14 +4,20 @@ Unified automatic quality assessment for speech, music, and sound.
 
 Read our paper [here](https://ai.meta.com/research/publications/meta-audiobox-aesthetics-unified-automatic-quality-assessment-for-speech-music-and-sound/).
 
-[](Paper)
 
 ## Installation
 
-This repository requires Python 3.9 and Pytorch 2.2 or greater. To install, you can clone this repo and run:
-```
-pip install -e .
-```
+1. Install via pip
+    ```
+    pip install audiobox_aesthetics
+    ```
+
+2. Install directly from source
+
+    This repository requires Python 3.9 and Pytorch 2.2 or greater. To install, you can clone this repo and run:
+    ```
+    pip install -e .
+    ```
 
 ## Pre-trained Models
 
