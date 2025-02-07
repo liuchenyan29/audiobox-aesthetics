@@ -6,17 +6,26 @@
 
 import argparse
 from functools import partial
+import logging
 import itertools
+import os
 from pathlib import Path
+import requests
 
 import submitit
+from tqdm import tqdm
 from .infer import load_dataset, main_predict
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
+DEFAULT_CKPT = "checkpoint.pt"
+DEFAULT_CKPT_URL = "https://dl.fbaipublicfiles.com/audiobox-aesthetics/checkpoint.pt"
 
 
 def parse_args():
     parser = argparse.ArgumentParser("CLI for audiobox-aesthetics inference")
     parser.add_argument("input_file", type=str)
-    parser.add_argument("--ckpt", type=str, required=True)
+    parser.add_argument("--ckpt", type=str, default=DEFAULT_CKPT)
     parser.add_argument("--batch-size", type=int, default=100)
     parser.add_argument(
         "--remote", action="store_true", default=False, help="Set true to run via SLURM"
@@ -53,8 +62,41 @@ def parse_args():
     return parser.parse_args()
 
 
+def download_file(url, destination):
+    """Download a file from a URL with a progress bar."""
+    try:
+        # Stream the request to handle large files
+        with requests.get(url, stream=True) as response:
+            response.raise_for_status()
+            # Get the total file size from the headers
+            total_size = int(response.headers.get("content-length", 0))
+            # Open the file in binary write mode
+            with open(destination, "wb") as f:
+                # Use tqdm to create a progress bar
+                with tqdm(
+                    total=total_size,
+                    unit="B",
+                    unit_scale=True,
+                    desc=os.path.basename(destination),
+                ) as pbar:
+                    # Iterate over the response in chunks
+                    for chunk in response.iter_content(chunk_size=1024):
+                        # Write each chunk to the file
+                        f.write(chunk)
+                        # Update the progress bar
+                        pbar.update(len(chunk))
+        logging.info(f"File has been downloaded and saved to '{destination}'.")
+    except requests.exceptions.RequestException as e:
+        logging.error(f"An error occurred while downloading the file: {e}")
+
+
 def app():
     args = parse_args()
+
+    # Check if checkpoint exists
+    if not Path(args.ckpt).exists():
+        logging.info(f"{args.ckpt} not found. Downloading  ...")
+        download_file(DEFAULT_CKPT_URL, args.ckpt)
 
     metadata = load_dataset(args.input_file, 0, 2**64)
     fn_wrapped = partial(main_predict, batch_size=args.batch_size, ckpt=args.ckpt)

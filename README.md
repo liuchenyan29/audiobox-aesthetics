@@ -24,23 +24,24 @@ All axes | [checkpoint.pt](https://dl.fbaipublicfiles.com/audiobox-aesthetics/ch
 How to run prediction:
 
 1. Create a jsonl files with the following format
-```
-{"path":"/path/to/a.wav"}
-{"path":"/path/to/b.wav"}
-...
-{"path":"/path/to/z.wav"}
-```
-or if you only want to predict aesthetic score from certain timestamp
-```
-{"path":"/path/to/a.wav", "start_time":0, "end_time": 5}
-{"path":"/path/to/b.wav", "start_time":3, "end_time": 10}
-```
-and save it as `input.jsonl`
+    ```
+    {"path":"/path/to/a.wav"}
+    {"path":"/path/to/b.wav"}
+    ...
+    {"path":"/path/to/z.wav"}
+    ```
+    or if you only want to predict aesthetic score from certain timestamp
+    ```
+    {"path":"/path/to/a.wav", "start_time":0, "end_time": 5}
+    {"path":"/path/to/b.wav", "start_time":3, "end_time": 10}
+    ```
+    and save it as `input.jsonl`
 
 2. Run following command
-```
-audio-aes input.jsonl --ckpt "/path/to/checkpoint.pt" > output.jsonl
-```
+    ```
+    audio-aes input.jsonl --ckpt "/path/to/checkpoint.pt" > output.jsonl
+    ```
+    If path for ckpt didn't exist or you haven't download the checkpoint, the script will try to download it automatically.
 
 3. Output file will contains same number of rows as `input.jsonl`. Each rows contains 4 axes prediction with JSON-formatted dictionary. Check following table for more info:
     Axes name | Full name
