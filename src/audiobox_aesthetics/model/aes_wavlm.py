@@ -5,12 +5,14 @@
 # LICENSE file in the root directory of this source tree.
 
 from dataclasses import dataclass
-import sys
+import logging
 from torch import nn
 import torch
 
 from .utils import create_mlp_block
 from .wavlm import WavLM, WavLMConfig
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
 DEFAULT_AUDIO_CFG = WavLMConfig(
@@ -119,9 +121,8 @@ class WavlmAudioEncoderMultiOutput(nn.Module):
         }
         self.precision = precision_map[str(self.precision)]
         self.enable_autocast = str(self.precision) in {"16", "bf16"}
-        print(
-            f"precision: {self.precision}, enable autocast: {self.enable_autocast}",
-            file=sys.stderr,
+        logging.info(
+            f"model precision: {self.precision}, enable autocast: {self.enable_autocast}",
         )
 
     def forward(self, batch):

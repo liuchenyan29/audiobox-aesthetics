@@ -37,7 +37,8 @@ dependencies = [
   "torch>=2.2.0",
   "torchaudio",
   "tqdm",
-  "submitit"
+  "submitit",
+  "huggingface_hub"
 ]
 
 [project.scripts]
