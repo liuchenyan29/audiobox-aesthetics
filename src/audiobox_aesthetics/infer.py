@@ -6,17 +6,26 @@
 
 from dataclasses import dataclass
 import json
+import logging
 import re
-import sys
 from typing import Any, Dict, List
 from tqdm import tqdm
 import torch
 import torchaudio
 import torch.nn.functional as F
 
+from .utils import load_model
+
 from .model.aes_wavlm import Normalize, WavlmAudioEncoderMultiOutput
 
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
+
+# STRUCT
 Batch = Dict[str, Any]
+
+# CONST
+AXES_NAME = ["CE", "CU", "PC", "PQ"]
 
 
 def read_wav(meta):
@@ -66,9 +75,6 @@ def make_inference_batch(
     return wavs, masks, weights, bids
 
 
-AXES_NAME = ["CE", "CU", "PC", "PQ"]
-
-
 @dataclass
 class AesWavlmPredictorMultiOutput:
     checkpoint_pth: str
@@ -77,12 +83,17 @@ class AesWavlmPredictorMultiOutput:
     data_col: str = "path"
     sample_rate: int = 16000  # const
 
+    def __post_init__(self):
+        self.setup_model()
+
     def setup_model(self):
+        checkpoint_file = load_model(self.checkpoint_pth)
+
         # This method gets called before inference starts
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print(f"Setting up Aesthetic model on {self.device}", file=sys.stderr)
+        logging.info(f"Setting up Aesthetic model on {self.device}")
 
-        with open(self.checkpoint_pth, "rb") as fin:
+        with open(checkpoint_file, "rb") as fin:
             ckpt = torch.load(fin, map_location=self.device)
             state_dict = {
                 re.sub("^model.", "", k): v for (k, v) in ckpt["state_dict"].items()
@@ -190,10 +201,13 @@ def load_dataset(path, start=None, end=None) -> List[Batch]:
     return metadata
 
 
-def main_predict(input_file, ckpt, batch_size=10):
-    predictor = AesWavlmPredictorMultiOutput(checkpoint_pth=ckpt, data_col="path")
+def initialize_model(ckpt):
+    model_predictor = AesWavlmPredictorMultiOutput(checkpoint_pth=ckpt, data_col="path")
+    return model_predictor
 
-    predictor.setup_model()
+
+def main_predict(input_file, ckpt, batch_size=10):
+    predictor = initialize_model(ckpt)
 
     # load file
     if isinstance(input_file, str):
