@@ -16,7 +16,7 @@ import torch.nn.functional as F
 
 from .utils import load_model
 
-from .model.aes_wavlm import Normalize, WavlmAudioEncoderMultiOutput
+from .model.aes import AesMultiOutput, Normalize
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -76,7 +76,7 @@ def make_inference_batch(
 
 
 @dataclass
-class AesWavlmPredictorMultiOutput:
+class AesPredictor:
     checkpoint_pth: str
     precision: str = "bf16"
     batch_size: int = 1
@@ -87,47 +87,55 @@ class AesWavlmPredictorMultiOutput:
         self.setup_model()
 
     def setup_model(self):
-        checkpoint_file = load_model(self.checkpoint_pth)
-
-        # This method gets called before inference starts
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         logging.info(f"Setting up Aesthetic model on {self.device}")
 
-        with open(checkpoint_file, "rb") as fin:
-            ckpt = torch.load(fin, map_location=self.device)
-            state_dict = {
-                re.sub("^model.", "", k): v for (k, v) in ckpt["state_dict"].items()
-            }
-        model = WavlmAudioEncoderMultiOutput(
-            **{
-                k: ckpt["model_cfg"][k]
-                for k in [
-                    "proj_num_layer",
-                    "proj_ln",
-                    "proj_act_fn",
-                    "proj_dropout",
-                    "nth_layer",
-                    "use_weighted_layer_sum",
-                    "precision",
-                    "normalize_embed",
-                    "output_dim",
-                ]
-            }
-        )
-        model.load_state_dict(state_dict)
+        if self.checkpoint_pth is not None:
+            logging.info("Using local checkpoint ...")
+            # Original way to load model directly using load_state_dict
+            checkpoint_file = load_model(self.checkpoint_pth)
+
+            # Rename keys
+            with open(checkpoint_file, "rb") as fin:
+                ckpt = torch.load(fin, map_location=self.device)
+                state_dict = {
+                    re.sub("^model.", "", k): v for (k, v) in ckpt["state_dict"].items()
+                }
+
+            model = AesMultiOutput(
+                **(
+                    {
+                        k: ckpt["model_cfg"][k]
+                        for k in [
+                            "proj_num_layer",
+                            "proj_ln",
+                            "proj_act_fn",
+                            "proj_dropout",
+                            "nth_layer",
+                            "use_weighted_layer_sum",
+                            "precision",
+                            "normalize_embed",
+                            "output_dim",
+                        ]
+                    }
+                    | {"target_transform": ckpt["target_transform"]}
+                )
+            )
+            model.load_state_dict(state_dict)
+        else:
+            logging.info("Using HF from_pretrained to load AES model ...")
+            # load from HF repo (using safetensors)
+            model = AesMultiOutput.from_pretrained("facebook/audiobox-aesthetics")
+
         model.to(self.device)
         model.eval()
 
         self.model = model
-        self.dtype = {
-            "16": torch.float16,
-            "bf16": torch.bfloat16,
-        }.get(self.precision)
 
         self.target_transform = {
             axis: Normalize(
-                mean=ckpt["target_transform"][axis]["mean"],
-                std=ckpt["target_transform"][axis]["std"],
+                mean=model.target_transform[axis]["mean"],
+                std=model.target_transform[axis]["std"],
             )
             for axis in AXES_NAME
         }
@@ -186,8 +194,6 @@ class AesWavlmPredictorMultiOutput:
             all_rows = [
                 dict(zip(all_result.keys(), vv)) for vv in zip(*all_result.values())
             ]
-            # convert to json str
-            all_rows = [json.dumps(x) for x in all_rows]
             return all_rows
 
 
@@ -201,13 +207,13 @@ def load_dataset(path, start=None, end=None) -> List[Batch]:
     return metadata
 
 
-def initialize_model(ckpt):
-    model_predictor = AesWavlmPredictorMultiOutput(checkpoint_pth=ckpt, data_col="path")
+def initialize_predictor(ckpt=None):
+    model_predictor = AesPredictor(checkpoint_pth=ckpt, data_col="path")
     return model_predictor
 
 
 def main_predict(input_file, ckpt, batch_size=10):
-    predictor = initialize_model(ckpt)
+    predictor = initialize_predictor(ckpt)
 
     # load file
     if isinstance(input_file, str):
@@ -218,7 +224,8 @@ def main_predict(input_file, ckpt, batch_size=10):
     outputs = []
     for ii in tqdm(range(0, len(metadata), batch_size)):
         output = predictor.forward(metadata[ii : ii + batch_size])
-        outputs.extend(output)
+        # convert to json string
+        outputs.extend([json.dumps(x) for x in output])
     assert len(outputs) == len(
         metadata
     ), f"Output {len(outputs)} != input {len(metadata)} length"

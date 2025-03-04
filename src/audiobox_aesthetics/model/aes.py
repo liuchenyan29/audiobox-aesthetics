@@ -6,11 +6,13 @@
 
 from dataclasses import dataclass
 import logging
+from typing import Dict
 from torch import nn
 import torch
 
 from .utils import create_mlp_block
 from .wavlm import WavLM, WavLMConfig
+from huggingface_hub import PyTorchModelHubMixin
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -72,7 +74,13 @@ AXES_NAME = ["CE", "CU", "PC", "PQ"]
 
 
 @dataclass(eq=False)
-class WavlmAudioEncoderMultiOutput(nn.Module):
+class AesMultiOutput(
+    nn.Module,
+    PyTorchModelHubMixin,
+    repo_url="https://github.com/facebookresearch/audiobox-aesthetics",
+    pipeline_tag="audio-classification",
+    license="cc-by-4.0",
+):
     proj_num_layer: int = 1
     proj_ln: bool = False
     proj_act_fn: str = "gelu"
@@ -82,6 +90,7 @@ class WavlmAudioEncoderMultiOutput(nn.Module):
     precision: str = "32"
     normalize_embed: bool = True
     output_dim: int = 1
+    target_transform: Dict[str, Dict[str, float]] = None
 
     def __post_init__(self):
         super().__init__()

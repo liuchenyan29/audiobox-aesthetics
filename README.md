@@ -31,19 +31,19 @@ All axes | [checkpoint.pt](https://dl.fbaipublicfiles.com/audiobox-aesthetics/ch
 
 ## Usage
 
-How to run prediction:
+### How to run prediction using CLI:
 
 1. Create a jsonl files with the following format
  ```
  {"path":"/path/to/a.wav"}
- {"path":"/path/to/b.wav"}
+ {"path":"/path/to/b.flac"}
  ...
  {"path":"/path/to/z.wav"}
  ```
  or if you only want to predict aesthetic scores from certain timestamp
  ```
  {"path":"/path/to/a.wav", "start_time":0, "end_time": 5}
- {"path":"/path/to/b.wav", "start_time":3, "end_time": 10}
+ {"path":"/path/to/b.flac", "start_time":3, "end_time": 10}
  ```
  and save it as `input.jsonl`
 
@@ -61,6 +61,7 @@ How to run prediction:
 
 
 3. Output file will contain the same number of rows as `input.jsonl`. Each row contains 4 axes of prediction with a JSON-formatted dictionary. Check the following table for more info:
+ 
  Axes name | Full name
  |---|---|
  CE | Content Enjoyment
@@ -77,6 +78,23 @@ How to run prediction:
     
     ```jq '.CE' output.jsonl > output-aes_ce.txt```
 
+
+### How to run prediction from Python script or interpreter
+
+1. Infer from file path
+```
+from audiobox_aesthetics.infer import initialize_predictor
+predictor = initialize_predictor()
+predictor.forward([{"path":"/path/to/a.wav"}, {"path":"/path/to/b.flac"}])
+```
+
+2. Infer from torch tensor
+```
+from audiobox_aesthetics.infer import initialize_predictor
+predictor = initialize_predictor()
+wav, sr = torchaudio.load("/path/to/a.wav")
+predictor.forward([{"path":wav, "sample_rate": sr}])
+```
 
 ## Evaluation dataset
 We released our evaluation dataset consisting of 4 axes of aesthetic annotation scores. 

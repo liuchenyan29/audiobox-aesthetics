@@ -11,7 +11,7 @@ import itertools
 from pathlib import Path
 
 import submitit
-from .infer import initialize_model, load_dataset, main_predict
+from .infer import initialize_predictor, load_dataset, main_predict
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -101,7 +101,7 @@ def app():
         )
 
         # load first in master node to make sure checkpoint is ready
-        initialize_model(args.ckpt)
+        initialize_predictor(args.ckpt)
 
         # launch array job
         jobs = executor.map_array(fn_wrapped, chunked)
