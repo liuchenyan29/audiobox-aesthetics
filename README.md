@@ -95,6 +95,16 @@ predictor = initialize_predictor()
 wav, sr = torchaudio.load("/path/to/a.wav")
 predictor.forward([{"path":wav, "sample_rate": sr}])
 ```
+### How to load model using HuggingFace way (for finetuning, etc)
+
+```
+from audiobox_aesthetics.model.aes import AesMultiOutput
+model = AesMultiOutput.from_pretrained("facebook/audiobox-aesthetics")
+# finetune the model
+...
+# finished finetuning & upload the model
+model.push_to_hub("<your_hf_username>/<your_hf_repo>")
+```
 
 ## Evaluation dataset
 We released our evaluation dataset consisting of 4 axes of aesthetic annotation scores. 
