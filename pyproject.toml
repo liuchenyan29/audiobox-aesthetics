@@ -38,7 +38,9 @@ dependencies = [
   "torchaudio",
   "tqdm",
   "submitit",
-  "huggingface_hub"
+  "huggingface_hub",
+  "rich>=13.9.4",
+  "safetensors>=0.5.3",
 ]
 
 [project.scripts]
