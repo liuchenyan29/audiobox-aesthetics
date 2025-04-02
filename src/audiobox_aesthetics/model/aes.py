@@ -91,6 +91,7 @@ class AesMultiOutput(
     normalize_embed: bool = True
     output_dim: int = 1
     target_transform: Dict[str, Dict[str, float]] = None
+    freeze_encoder: bool = True  # trf encoder freeze true means no weight update
 
     def __post_init__(self):
         super().__init__()
@@ -151,16 +152,21 @@ class AesMultiOutput(
                 dtype=self.precision,
                 enabled=self.enable_autocast,
             ),
-            torch.no_grad(),
+            torch.set_grad_enabled(self.training),
         ):
             if self.wavlm_model.cfg.normalize:
                 wav = torch.nn.functional.layer_norm(wav, wav.shape)
-            (_, all_outputs), embed_padding_mask = self.wavlm_model.extract_features(
-                source=wav,
-                padding_mask=padding_mask,
-                output_layer=self.nth_layer,
-                ret_layer_results=True,
-            )
+
+            with torch.set_grad_enabled(self.training and not self.freeze_encoder):
+                (_, all_outputs), embed_padding_mask = (
+                    self.wavlm_model.extract_features(
+                        source=wav,
+                        padding_mask=padding_mask,
+                        output_layer=self.nth_layer,
+                        ret_layer_results=True,
+                    )
+                )
+
             all_outputs = torch.stack([gg[0] for gg in all_outputs], dim=-1)  # T B C L
             preds = {}
             for name in self.axes_name:
