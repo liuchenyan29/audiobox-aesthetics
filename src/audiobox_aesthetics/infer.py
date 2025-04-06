@@ -18,7 +18,8 @@ from .utils import load_model
 
 from .model.aes import AesMultiOutput, Normalize
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+# Create module-level logger instead of configuring root logger
+logger = logging.getLogger(__name__)
 
 
 # STRUCT
@@ -93,10 +94,10 @@ class AesPredictor:
             self.device = torch.device("mps")
         else:
             self.device = torch.device("cpu")
-        logging.info(f"Setting up Aesthetic model on {self.device}")
+        logger.info(f"Setting up Aesthetic model on {self.device}")
 
         if self.checkpoint_pth is not None:
-            logging.info("Using local checkpoint ...")
+            logger.info("Using local checkpoint ...")
             # Original way to load model directly using load_state_dict
             checkpoint_file = load_model(self.checkpoint_pth)
 
@@ -128,7 +129,7 @@ class AesPredictor:
             )
             model.load_state_dict(state_dict)
         else:
-            logging.info("Using HF from_pretrained to load AES model ...")
+            logger.info("Using HF from_pretrained to load AES model ...")
             # load from HF repo (using safetensors)
             model = AesMultiOutput.from_pretrained("facebook/audiobox-aesthetics")
 
