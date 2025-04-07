@@ -14,7 +14,7 @@ from .utils import create_mlp_block
 from .wavlm import WavLM, WavLMConfig
 from huggingface_hub import PyTorchModelHubMixin
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logging = logging.getLogger(__name__)
 
 
 DEFAULT_AUDIO_CFG = WavLMConfig(

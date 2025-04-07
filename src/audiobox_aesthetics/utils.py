@@ -16,9 +16,7 @@ DEFAULT_HF_REPO = "facebook/audiobox-aesthetics"
 DEFAULT_CKPT_FNAME = "checkpoint.pt"
 DEFAULT_S3_URL = "https://dl.fbaipublicfiles.com/audiobox-aesthetics/checkpoint.pt"
 
-
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-
+logging = logging.getLogger(__name__)
 
 def download_file(url, destination):
     """Download a file from a URL with a progress bar."""
