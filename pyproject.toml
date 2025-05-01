@@ -4,24 +4,24 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "audiobox_aesthetics"
-version = "0.0.1"
+version = "0.0.4"
 authors = [
-    {name="Andros Tjandra", email="androstj@meta.com"},
-    {name="Yi-Chiao Wu"},
-    {name="Baishan Guo"},
-    {name="John Hoffman"},
-    {name="Brian Ellis"},
-    {name="Apoorv Vyas"},
-    {name="Bowen Shi"},
-    {name="Sanyuan Chen"},
-    {name="Matt Le"},
-    {name="Nick Zacharov"},
-    {name="Carleigh Wood"},
-    {name="Ann Lee"},
-    {name="Wei-ning Hsu"}
+    {name = "Andros Tjandra"},
+    {name = "Yi-Chiao Wu"},
+    {name = "Baishan Guo"},
+    {name = "John Hoffman"},
+    {name = "Brian Ellis"},
+    {name = "Apoorv Vyas"},
+    {name = "Bowen Shi"},
+    {name = "Sanyuan Chen"},
+    {name = "Matt Le"},
+    {name = "Nick Zacharov"},
+    {name = "Carleigh Wood"},
+    {name = "Ann Lee"},
+    {name = "Wei-ning Hsu"}
 ]
 maintainers = [
-    {name="Andros Tjandra", email="androstj@meta.com"}
+    {name = "Andros Tjandra", email = "androstj@meta.com"}
 ]
 description = "Unified automatic quality assessment for speech, music, and sound."
 requires-python = ">=3.9"
